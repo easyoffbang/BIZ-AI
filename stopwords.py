@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Mar 24 15:57:50 2021
-
-@author: jinho
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Mar 22 23:34:12 2021
-
-@author: jinho
-"""
 import pandas as pd
 from konlpy.tag import Okt
 
@@ -36,7 +23,7 @@ def stop_word(path, stop_words):
     esg = esg.drop(['Unnamed: 0'], axis = 1)
     esg = esg.apply(lambda x: x.str.strip().replace('\n',''), axis = 1)
     esg['text'] = esg['text'].apply(lambda stop_remove: [word for word in stop_remove.split() if word not in stop_words])
-    
+    return esg
 
 stop_words = "또한 이때 대한 따라서 및 이에 대한 또는 등 이를 기업은 기업의 아울러 \n" \
                 + "주요 하며 더욱 등에 등의 그 따른 적극 더불어 도출된 이 때 등을 등에서 아울러 대한 다음과 모두 \n" \
