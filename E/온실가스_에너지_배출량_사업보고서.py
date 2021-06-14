@@ -11,7 +11,7 @@ import pandas as pd
 import re
 import numpy
 
-saub_2020 = pd.read_csv(r'C:/Users/jinho/OneDrive/바탕 화면/사업의내용부분/2020totalreport.csv', encoding = 'utf-8')
+saub_2020 = pd.read_csv(r'C:/Users/jinho/OneDrive/바탕 화면/기타자료/사업의내용부분/2020totalreport.csv', encoding = 'utf-8')
 
 com_list = []
 code_list = []
@@ -34,6 +34,13 @@ for i in range(len(cont_list)):
         t.append(None)
         pass
 
+#flag는 모두 이중칼럼이 존재할때만 사용
+#1일때, 온실가스 or 에너지가 칼럼명에 존재하고 그 하위칼럼으로 총계, 합계 등이 존재할때
+#2일때, 온실가스 or 에너지가 칼럼명에 존재하고 그 하위칼럼으로 20XX년, -기 등이 존재할때
+#3일때, 20XX년, -기가 칼럼명에 존재하고 그 하위칼럼으로 총계, 합계 등이 존재할 때.
+#4일때, 20XX년, -기가 칼럼명에 존재하고 그 하위칼럼으로 온실가스 or 에너지가 존재할 때
+#5일때, flag 1이고 행에 총계, 합계 등이 존재할 때
+
 
 df_list = pd.DataFrame({'company' : com_list, 'code': code_list, 'content': t,'onsil': None, 'energy':None})
 list_n = []
@@ -41,19 +48,7 @@ che = 1
 for n in range(len(t)):
     if t[n] != None:
         for tem in t[n]:
-            flag1_1 = False
-            flag1_2 = False
-            flag2_1 = False
-            flag2_2 = False
-            flag1_1_1 = False  
-            flag1_1_2 = False 
-            flag1_1_3 = False 
-            flag1_2_1 = False 
-            flag1_2_2 = False 
-            flag2_1_1 = False 
-            flag2_1_2 = False 
-            flag2_2_1 = False
-            flag2_2_2 = False
+            flag = 0
             col = tem.columns
             onsil_row_ind = None
             energy_row_ind = None
@@ -218,38 +213,38 @@ for n in range(len(t)):
                         col_name_list = list(set(col_name_list))
                         if '계' in col_name[1] or '총량' in col_name[1] or '합' in col_name[1] or '총 량' in col_name[1]:
                             col_name_chong = col_name[1]
-                            flag1_1 = True
+                            flag = 1
                         elif re.search('2020|\d{0,3}기\b', col_name[1]):
                             col_name_years = col_name[1]
-                            flag1_2 = True
+                            flag = 2
                     elif re.search('2020|\d{0,3}기\b', col_name[0]) != None:
                         col_name_years = col_name[0]
                         if  re.search(r'[총합]?\s?계\b|총\s?량', col_name[1]) != None:
                             col_name_chong = col_name[1]
-                            flag2_1 = True
+                            flag = 3
                         elif '온실가스' in col_name[1] or '에너지' in col_name[1]:
                             col_name_list.append(col_name[1])
                             col_name_list = list(set(col_name_list))
-                            flag2_2 = True
+                            flag = 4
                         
 
                 
                 
-                if flag1_1:
+                if flag == 1:
                     for num in range(len(tem)):
                         row_list = list(tem.iloc[num])
                         if re.search(r'[총합]?\s?계\b|총\s?량', str(row_list)) != None:
                             row_index = num
-                            flag1_1_1 = True
+                            flag = 5
                             break
                         elif re.search('2020|\d{0,3}기\b', str(row_list)) != None:
                             row_index = num
-                            flag1_1_2 = True
+                            flag = 6
                             break
                     if re.search(r'[총합]?\s?계|총\s?량',str(tem.iloc[:,0])) == None:
-                        flag1_1_3 = True
+                        flag = 7
          
-                if flag1_1_1:
+                if flag == 5:
                     for li in range(len(col_name_list)):
                         if '온실가스' in str(col_name_list[li]):
                             onsil_ind = li
@@ -271,7 +266,7 @@ for n in range(len(t)):
 
                     print('-'*50)
                 
-                if flag1_1_2:
+                if flag == 6:
                     for li in range(len(col_name_list)):
                         if '온실가스' in str(col_name_list[li]):
                             onsil_ind = li
@@ -300,7 +295,7 @@ for n in range(len(t)):
                         print('-'*50)
                         break
                     
-                if flag1_1_3:
+                if flag == 7:
                     for li in range(len(col_name_list)):
                         if '온실가스' in str(col_name_list[li]):
                             onsil_ind = li
@@ -349,17 +344,17 @@ for n in range(len(t)):
                         print('오류113')
                         break
                 
-                if flag1_2:
+                if flag == 2:
                     for num in range(len(tem)):
                         row_list = list(tem.iloc[num])
                         if re.search(r'[총합]?\s?계\b|총\s?량', str(row_list)) != None:
                             row_index = num
-                            flag1_2_1 = True
+                            flag = 8
                             break
                     if re.search(r'[총합]?\s?계|총\s?량',str(tem.iloc[:,0])) == None:
-                        flag1_2_2 = True
+                        flag = 9
                         
-                if flag1_2_1:
+                if flag == 8:
                     for li in range(len(col_name_list)):
                         if '온실가스' in str(col_name_list[li]):
                             onsil_ind = li
@@ -380,7 +375,7 @@ for n in range(len(t)):
                         df_list.loc[n,'energy'] = '-'
                     print('-'*50)
                       
-                if flag1_2_2:
+                if flag == 9:
                     for li in range(len(col_name_list)):
                         if '온실가스' in str(col_name_list[li]):
                             onsil_ind = li
@@ -426,7 +421,7 @@ for n in range(len(t)):
                         df_list.loc[n,'energy'] = '-'
                     print('-'*50)            
                 
-                if flag2_1:
+                if flag == 3:
                     row_list = list(tem.iloc[:,0])
                     for i in range(len(row_list)):
                         if '온실가스' in row_list[i]:
@@ -443,17 +438,17 @@ for n in range(len(t)):
                         df_list.loc[n,'onsil'] = '-'
                         df_list.loc[n,'energy'] = tem[col_name_years][col_name_chong][row_energy_ind]
                         
-                if flag2_2:
+                if flag == 4:
                     for num in range(len(tem)):
                         row_list= list(tem.iloc[num])
                         if re.search(r'[총합]?\s?계\b|총\s?량', str(row_list)) != None:
                             row_index = num
-                            flag2_2_1 = True
+                            flag = 10
                             break
                     if re.search(r'[총합]?\s?계|총\s?량',str(tem.iloc[:,0])) == None:
-                        flag2_2_2 = True
+                        flag = 11
                     
-                if flag2_2_2:
+                if flag == 11:
                     for li in range(len(col_name_list)):
                         if '온실가스' in str(col_name_list[li]):
                             onsil_ind = li
@@ -491,7 +486,7 @@ for n in range(len(t)):
                         df_list.loc[n,'energy'] = '-'
                     print('-'*50)            
                           
-                if flag2_2_1:
+                if flag == 10:
                     for li in range(len(col_name_list)):
                         if '온실가스' in str(col_name_list[li]):
                             onsil_ind = li
@@ -507,9 +502,6 @@ for n in range(len(t)):
                     else:
                         print('에너지: -')
                     print('-'*50)
-                    
-                    
-    
                     
                     
 
@@ -532,6 +524,5 @@ for i in range(len(df_list)):
 for i in range(len(df_list)):
     if df_list['onsil'][i] == None or df_list['energy'][i] == None:
         print(df_list['company'][i])
-
 
 df_list.to_csv(r'C:/Users/jinho/OneDrive/바탕 화면/녹색경영부분/2020totalreport_ver2.csv', encoding = 'utf-8', index = False)
